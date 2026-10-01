@@ -1,0 +1,1164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Simulador educacional da Nover Invest para estimar evolução de patrimônio e conhecer um perfil indicativo de tolerância a risco.">
+<title>Simulador de Patrimônio | Nover Invest</title>
+
+<style>
+  :root{
+    /* Ajuste estas variáveis para a identidade visual oficial da Nover */
+    --brand:#C8A96B;
+    --brand-strong:#A88749;
+    --ink:#111315;
+    --ink-2:#24282C;
+    --bg:#F6F5F1;
+    --card:#FFFFFF;
+    --muted:#6C7176;
+    --line:#E3E1DA;
+    --soft:#EFEDE7;
+    --success:#2F6B52;
+    --danger:#B44A4A;
+    --radius:18px;
+    --shadow:0 18px 48px rgba(17,19,21,.08);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at top right, rgba(200,169,107,.12), transparent 28rem),
+      var(--bg);
+    color:var(--ink);
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    line-height:1.5;
+  }
+
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  a{color:inherit}
+
+  .shell{min-height:100vh}
+  .topbar{
+    max-width:1120px;
+    margin:0 auto;
+    padding:24px 20px 0;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    text-decoration:none;
+    font-weight:800;
+    letter-spacing:.08em;
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:50%;
+    border:1px solid var(--ink);
+    display:grid;place-items:center;
+    font-size:12px;
+    position:relative;
+    overflow:hidden;
+  }
+  .brand-mark:after{
+    content:"";
+    position:absolute;
+    width:18px;height:18px;border-radius:50%;
+    background:var(--brand);
+    right:-4px;bottom:-4px;
+  }
+  .top-note{
+    color:var(--muted);
+    font-size:12px;
+    text-align:right;
+  }
+
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:54px 20px 72px;
+  }
+
+  .eyebrow{
+    color:var(--brand-strong);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:800;
+    text-align:center;
+    margin-bottom:12px;
+  }
+  h1{
+    font-size:clamp(34px,7vw,64px);
+    line-height:1.02;
+    letter-spacing:-.045em;
+    margin:0 auto 18px;
+    max-width:850px;
+    text-align:center;
+  }
+  .lead{
+    max-width:690px;
+    margin:0 auto;
+    color:var(--muted);
+    text-align:center;
+    font-size:clamp(15px,2.4vw,18px);
+  }
+
+  .stepper{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:34px 0 24px;
+  }
+  .step{
+    display:flex;
+    align-items:center;
+  }
+  .dot{
+    width:30px;height:30px;border-radius:50%;
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--muted);
+    display:grid;place-items:center;
+    font-size:12px;
+    font-weight:800;
+    transition:.2s ease;
+  }
+  .dot.on{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  .connector{
+    width:84px;height:1px;background:var(--line);
+  }
+  .connector.on{background:var(--ink)}
+
+  .panel{
+    background:rgba(255,255,255,.92);
+    border:1px solid rgba(227,225,218,.9);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:clamp(24px,5vw,42px);
+    backdrop-filter:blur(12px);
+  }
+  .hidden{display:none!important}
+
+  .section-title{
+    font-size:clamp(24px,4vw,34px);
+    line-height:1.12;
+    letter-spacing:-.03em;
+    margin:0 0 8px;
+  }
+  .section-sub{
+    color:var(--muted);
+    margin:0 0 28px;
+  }
+
+  .grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  .field-wrap{display:grid;gap:8px}
+  .field-wrap label{
+    font-size:13px;
+    font-weight:750;
+  }
+  .field,.select{
+    width:100%;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+    border-radius:12px;
+    padding:15px 14px;
+    outline:none;
+    transition:.2s ease;
+  }
+  .field:focus,.select:focus{
+    border-color:var(--brand-strong);
+    box-shadow:0 0 0 3px rgba(200,169,107,.16);
+  }
+  .hint{font-size:11px;color:var(--muted)}
+  .err{font-size:11px;color:var(--danger);min-height:16px}
+
+  .range-box{
+    margin-top:20px;
+    border:1px solid var(--line);
+    background:var(--soft);
+    border-radius:14px;
+    padding:18px;
+  }
+  .range-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .range-value{
+    font-size:22px;
+    font-weight:850;
+    letter-spacing:-.02em;
+  }
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--ink);
+  }
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:12px;
+    font-weight:750;
+  }
+  .chip.on{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+
+  .rate-note{
+    margin-top:18px;
+    border-left:3px solid var(--brand);
+    padding:10px 12px;
+    color:var(--muted);
+    font-size:12px;
+    background:#FCFBF8;
+  }
+
+  .question{
+    border-top:1px solid var(--line);
+    padding:22px 0;
+  }
+  .question:first-of-type{
+    border-top:0;
+    padding-top:0;
+  }
+  .q-title{
+    font-weight:800;
+    margin-bottom:12px;
+  }
+  .options{
+    display:grid;
+    gap:9px;
+  }
+  .option{
+    width:100%;
+    text-align:left;
+    border:1px solid var(--line);
+    background:#fff;
+    padding:13px 14px;
+    border-radius:12px;
+    color:var(--ink);
+    transition:.18s ease;
+  }
+  .option:hover{border-color:#B9B6AF}
+  .option.on{
+    border-color:var(--ink);
+    background:var(--ink);
+    color:#fff;
+  }
+
+  .checks{
+    display:grid;
+    gap:12px;
+    margin-top:6px;
+  }
+  .check{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    color:var(--muted);
+    font-size:12px;
+  }
+  .check input{margin-top:3px}
+  .check a{text-decoration:underline}
+
+  .actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:28px;
+    flex-wrap:wrap;
+  }
+  .btn{
+    border:0;
+    border-radius:999px;
+    padding:14px 22px;
+    font-weight:800;
+    min-width:148px;
+    transition:.18s ease;
+  }
+  .btn.primary{
+    background:var(--ink);
+    color:#fff;
+  }
+  .btn.primary:hover{transform:translateY(-1px)}
+  .btn.primary:disabled{
+    opacity:.36;
+    cursor:not-allowed;
+    transform:none;
+  }
+  .btn.ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    color:var(--ink);
+  }
+  .btn.brand{
+    background:var(--brand);
+    color:#181611;
+  }
+
+  .result-hero{
+    background:var(--ink);
+    color:#fff;
+    border-radius:var(--radius);
+    padding:clamp(26px,5vw,44px);
+    position:relative;
+    overflow:hidden;
+  }
+  .result-hero:after{
+    content:"";
+    position:absolute;
+    width:240px;height:240px;border-radius:50%;
+    background:var(--brand);
+    filter:blur(6px);
+    opacity:.18;
+    right:-80px;top:-90px;
+  }
+  .result-kicker{
+    color:#D8D8D8;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-weight:800;
+  }
+  .result-big{
+    font-size:clamp(38px,8vw,70px);
+    line-height:1;
+    font-weight:900;
+    letter-spacing:-.055em;
+    margin:12px 0;
+    position:relative;
+    z-index:1;
+  }
+  .result-copy{
+    color:#C6C8CB;
+    max-width:690px;
+    margin:0;
+    position:relative;
+    z-index:1;
+  }
+
+  .result-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin-top:18px;
+  }
+  .result-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px;
+  }
+  .mini-label{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:800;
+  }
+  .mini-value{
+    font-size:28px;
+    font-weight:900;
+    margin-top:6px;
+    letter-spacing:-.03em;
+  }
+
+  .bar-wrap{margin-top:18px;display:grid;gap:14px}
+  .bar-row{display:grid;gap:6px}
+  .bar-meta{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:12px;
+  }
+  .track{
+    height:9px;
+    background:var(--soft);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .fill{
+    height:100%;
+    background:var(--ink);
+    border-radius:999px;
+    width:0;
+    transition:width .5s ease;
+  }
+  .fill.brand{background:var(--brand-strong)}
+
+  .profile-name{
+    font-size:36px;
+    font-weight:900;
+    letter-spacing:-.04em;
+    margin:8px 0 12px;
+  }
+  .principles{
+    margin:18px 0 0;
+    padding:0;
+    list-style:none;
+    display:grid;
+    gap:10px;
+  }
+  .principles li{
+    display:flex;
+    gap:10px;
+    color:var(--muted);
+    font-size:13px;
+  }
+  .principles li:before{
+    content:"";
+    width:7px;height:7px;border-radius:50%;
+    background:var(--brand);
+    margin-top:7px;
+    flex:0 0 auto;
+  }
+
+  .cta{
+    margin-top:18px;
+    border-radius:var(--radius);
+    background:#ECE9E1;
+    padding:clamp(24px,5vw,34px);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:24px;
+  }
+  .cta h3{margin:0 0 6px;font-size:25px;letter-spacing:-.025em}
+  .cta p{margin:0;color:var(--muted);max-width:610px}
+
+  .disclaimer{
+    margin-top:18px;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.65;
+    border-top:1px solid var(--line);
+    padding-top:18px;
+  }
+
+  .footer{
+    max-width:1120px;
+    margin:0 auto;
+    padding:0 20px 36px;
+    color:var(--muted);
+    font-size:11px;
+    text-align:center;
+  }
+
+  @media(max-width:720px){
+    .top-note{display:none}
+    .wrap{padding-top:38px}
+    .grid-2,.result-grid{grid-template-columns:1fr}
+    .connector{width:46px}
+    .cta{align-items:flex-start;flex-direction:column}
+    .cta .btn{width:100%}
+    .actions .btn{flex:1}
+  }
+</style>
+</head>
+
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Nover Invest">
+      <span class="brand-mark">N</span>
+      <span>NOVER INVEST</span>
+    </a>
+    <div class="top-note">Conteúdo educacional e simulação ilustrativa</div>
+  </header>
+
+  <main class="wrap">
+    <div id="intro">
+      <div class="eyebrow">Simulador Nover</div>
+      <h1>Transforme uma meta em um ponto de partida.</h1>
+      <p class="lead">
+        Simule a evolução de um patrimônio, entenda um perfil indicativo de tolerância a risco
+        e descubra quais pontos merecem uma conversa mais aprofundada com um assessor.
+      </p>
+    </div>
+
+    <div class="stepper" id="stepper" aria-label="Etapas">
+      <div class="step"><div class="dot on">1</div><div class="connector"></div></div>
+      <div class="step"><div class="dot">2</div><div class="connector"></div></div>
+      <div class="step"><div class="dot">3</div></div>
+    </div>
+
+    <!-- ETAPA 1 -->
+    <section class="panel" id="s1">
+      <h2 class="section-title">Como você imagina construir esse patrimônio?</h2>
+      <p class="section-sub">Use valores aproximados. A simulação é apenas uma referência educacional.</p>
+
+      <div class="grid-2">
+        <div class="field-wrap">
+          <label for="initial">Quanto você pretende investir agora?</label>
+          <input class="field" id="initial" inputmode="numeric" placeholder="Ex.: R$ 50.000,00">
+          <div class="err" id="initialErr"></div>
+        </div>
+
+        <div class="field-wrap">
+          <label for="monthly">Quanto pretende aportar por mês?</label>
+          <input class="field" id="monthly" inputmode="numeric" placeholder="Ex.: R$ 2.000,00">
+          <div class="hint">Pode deixar em branco ou R$ 0,00.</div>
+        </div>
+      </div>
+
+      <div class="range-box">
+        <div class="range-head">
+          <div>
+            <div class="hint">Prazo da simulação</div>
+            <div class="range-value" id="yearsLabel">5 anos</div>
+          </div>
+        </div>
+        <input id="years" type="range" min="1" max="30" value="5">
+        <div class="chips" id="yearChips"></div>
+      </div>
+
+      <div class="rate-note" id="rateInfo">
+        Atualizando a taxa CDI de referência pelo Banco Central...
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" id="next1" disabled>Continuar</button>
+      </div>
+    </section>
+
+    <!-- ETAPA 2 -->
+    <section class="panel hidden" id="s2">
+      <h2 class="section-title">Como você reage a risco, prazo e liquidez?</h2>
+      <p class="section-sub">
+        Estas perguntas geram apenas um perfil indicativo para fins educacionais.
+        Elas não substituem o processo formal de suitability.
+      </p>
+
+      <div id="questions"></div>
+
+      <div class="actions">
+        <button class="btn ghost" data-back="1">Voltar</button>
+        <button class="btn primary" id="next2" disabled>Continuar</button>
+      </div>
+    </section>
+
+    <!-- ETAPA 3 -->
+    <section class="panel hidden" id="s3">
+      <h2 class="section-title">Receba o resultado da sua simulação.</h2>
+      <p class="section-sub">
+        Preencha seus dados para visualizar o resultado e, se quiser, conversar com a equipe da Nover.
+      </p>
+
+      <form id="leadForm" novalidate>
+        <div class="grid-2">
+          <div class="field-wrap">
+            <label for="name">Nome</label>
+            <input class="field" id="name" autocomplete="name" placeholder="Seu nome">
+          </div>
+          <div class="field-wrap">
+            <label for="phone">WhatsApp</label>
+            <input class="field" id="phone" inputmode="tel" autocomplete="tel" placeholder="(82) 99999-9999">
+          </div>
+          <div class="field-wrap">
+            <label for="email">E-mail</label>
+            <input class="field" id="email" type="email" autocomplete="email" placeholder="voce@email.com">
+          </div>
+          <div class="field-wrap">
+            <label for="objective">Principal objetivo</label>
+            <select class="select" id="objective">
+              <option value="">Selecione</option>
+              <option>Construir patrimônio</option>
+              <option>Aposentadoria</option>
+              <option>Gerar renda no futuro</option>
+              <option>Comprar um imóvel</option>
+              <option>Planejamento familiar e sucessório</option>
+              <option>Organizar investimentos atuais</option>
+              <option>Outro objetivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-wrap" style="margin-top:18px">
+          <label for="investedRange">Quanto você já possui investido hoje? <span style="font-weight:500;color:var(--muted)">(opcional)</span></label>
+          <select class="select" id="investedRange">
+            <option value="">Prefiro não informar</option>
+            <option>Até R$ 50 mil</option>
+            <option>R$ 50 mil a R$ 100 mil</option>
+            <option>R$ 100 mil a R$ 300 mil</option>
+            <option>R$ 300 mil a R$ 500 mil</option>
+            <option>R$ 500 mil a R$ 1 milhão</option>
+            <option>Acima de R$ 1 milhão</option>
+          </select>
+        </div>
+
+        <div class="checks">
+          <label class="check">
+            <input type="checkbox" id="privacy">
+            <span>
+              Li e estou ciente do tratamento dos meus dados para atender esta solicitação,
+              conforme o <a id="privacyLink" href="/politica-de-privacidade" target="_blank" rel="noopener">Aviso de Privacidade</a>.
+            </span>
+          </label>
+
+          <label class="check">
+            <input type="checkbox" id="marketing">
+            <span>Quero receber conteúdos, convites e comunicações da Nover. Posso cancelar a qualquer momento.</span>
+          </label>
+        </div>
+
+        <div class="err" id="formErr"></div>
+
+        <div class="actions">
+          <button type="button" class="btn ghost" data-back="2">Voltar</button>
+          <button type="submit" class="btn primary">Ver meu resultado</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- RESULTADO -->
+    <section id="result" class="hidden">
+      <div class="result-hero">
+        <div class="result-kicker">Resultado da simulação</div>
+        <div class="result-big" id="futureValue">R$ 0,00</div>
+        <p class="result-copy" id="futureCopy"></p>
+      </div>
+
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="mini-label">Total aportado no período</div>
+          <div class="mini-value" id="totalContributed">R$ 0,00</div>
+
+          <div class="bar-wrap">
+            <div class="bar-row">
+              <div class="bar-meta"><span>Total aportado</span><strong id="barContribLabel">R$ 0</strong></div>
+              <div class="track"><div class="fill" id="barContrib"></div></div>
+            </div>
+            <div class="bar-row">
+              <div class="bar-meta"><span>Valor bruto simulado</span><strong id="barFutureLabel">R$ 0</strong></div>
+              <div class="track"><div class="fill brand" id="barFuture"></div></div>
+            </div>
+          </div>
+
+          <div class="rate-note" id="resultRateInfo"></div>
+        </div>
+
+        <div class="result-card">
+          <div class="mini-label">Perfil indicativo de tolerância a risco</div>
+          <div class="profile-name" id="profileName"></div>
+          <p id="profileDesc" style="color:var(--muted);margin:0"></p>
+          <ul class="principles" id="principles"></ul>
+        </div>
+      </div>
+
+      <div class="cta">
+        <div>
+          <h3>O simulador mostra um cenário. O planejamento começa na conversa.</h3>
+          <p>
+            Um assessor da Nover pode avaliar objetivos, prazo, liquidez, patrimônio, riscos e alternativas
+            antes de qualquer decisão de investimento.
+          </p>
+        </div>
+        <a class="btn brand" id="whatsappCta" href="#" target="_blank" rel="noopener">Falar com um assessor</a>
+      </div>
+
+      <div class="actions" style="justify-content:center">
+        <button class="btn ghost" id="restart">Refazer simulação</button>
+      </div>
+
+      <div class="disclaimer">
+        <strong>Importante:</strong> esta ferramenta tem finalidade exclusivamente educacional e ilustrativa.
+        Os resultados são estimativas matemáticas baseadas em premissas simplificadas e não representam promessa,
+        garantia ou expectativa de rentabilidade. A simulação utiliza o CDI corrente como taxa de referência e,
+        para fins de cálculo, pressupõe que essa taxa permaneça constante durante todo o prazo escolhido, o que
+        provavelmente não ocorrerá. Não são considerados, entre outros fatores, tributação, inflação, taxas,
+        custos, carências, volatilidade, risco de crédito ou mudanças nas condições de mercado.
+        O perfil exibido é apenas indicativo e não constitui análise formal de perfil do investidor, recomendação,
+        oferta ou indicação de produto, ativo, serviço ou estratégia. Antes de investir, é necessário realizar a
+        avaliação adequada ao perfil e às circunstâncias do cliente junto à instituição responsável.
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Nover Invest. Simulação educacional. Configure neste arquivo os links institucionais, integrações e dados oficiais antes da publicação.
+  </footer>
+</div>
+
+<script>
+/* ==============================================================
+   NOVER INVEST — SIMULADOR EDUCACIONAL
+
+   O que configurar antes de publicar:
+   1) CFG.whatsappNumber
+   2) CFG.leadWebhookUrl
+   3) CFG.privacyUrl
+   4) identidade visual em :root
+   5) texto jurídico/compliance final aprovado pela Nover/XP
+   ============================================================== */
+
+const CFG = {
+  minInitial: 100,
+  defaultYears: 5,
+  yearsMin: 1,
+  yearsMax: 30,
+  yearShortcuts: [1,3,5,10,15,20],
+  fallbackCDI: 14.90,
+  bcbSeries: 4389, // CDI anualizado, base 252
+  bcbUrl: s => `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${s}/dados/ultimos/2?formato=json`,
+
+  /* SUBSTITUIR PELO NÚMERO OFICIAL DA NOVER, somente dígitos com DDI + DDD */
+  whatsappNumber: '55XXXXXXXXXXX',
+
+  /* Cole aqui o endpoint do CRM/n8n/HubSpot/Pipedrive etc. Ex.: https://seu-dominio.com/webhook/nover-simulador */
+  leadWebhookUrl: '',
+
+  /* Ajuste para a URL oficial */
+  privacyUrl: '/politica-de-privacidade'
+};
+
+const state = {
+  initialCents: 0,
+  monthlyCents: 0,
+  years: CFG.defaultYears,
+  answers: {},
+  rate: {
+    cdi: CFG.fallbackCDI,
+    source: 'Taxa de contingência',
+    refDate: null
+  },
+  utm: {}
+};
+
+const $ = id => document.getElementById(id);
+const brl = n => Number(n || 0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct = n => Number(n || 0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '%';
+
+function moneyMask(el, key){
+  el.addEventListener('input', e => {
+    const cents = parseInt(e.target.value.replace(/\D/g,'') || '0',10);
+    state[key] = cents;
+    e.target.value = cents ? brl(cents/100) : '';
+    validateStep1();
+  });
+}
+
+moneyMask($('initial'),'initialCents');
+moneyMask($('monthly'),'monthlyCents');
+
+function phoneMask(v){
+  const d = v.replace(/\D/g,'').slice(0,11);
+  if(d.length <= 2) return d;
+  if(d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+}
+$('phone').addEventListener('input', e => e.target.value = phoneMask(e.target.value));
+
+function validateStep1(){
+  const val = state.initialCents/100;
+  const ok = val >= CFG.minInitial;
+  $('initialErr').textContent = state.initialCents && !ok
+    ? `O valor inicial mínimo para esta simulação é ${brl(CFG.minInitial)}.`
+    : '';
+  $('next1').disabled = !ok;
+}
+
+function setYears(n){
+  state.years = Math.max(CFG.yearsMin,Math.min(CFG.yearsMax,Number(n)));
+  $('years').value = state.years;
+  $('yearsLabel').textContent = state.years + (state.years === 1 ? ' ano' : ' anos');
+  document.querySelectorAll('.chip[data-year]').forEach(chip=>{
+    chip.classList.toggle('on',Number(chip.dataset.year) === state.years);
+  });
+}
+$('years').addEventListener('input',e=>setYears(e.target.value));
+
+$('yearChips').innerHTML = CFG.yearShortcuts.map(y =>
+  `<button type="button" class="chip" data-year="${y}">${y} ${y===1?'ano':'anos'}</button>`
+).join('');
+document.querySelectorAll('.chip[data-year]').forEach(chip=>{
+  chip.addEventListener('click',()=>setYears(chip.dataset.year));
+});
+setYears(CFG.defaultYears);
+
+async function loadCDI(){
+  try{
+    const response = await fetch(CFG.bcbUrl(CFG.bcbSeries));
+    if(!response.ok) throw new Error('BCB indisponível');
+    const data = await response.json();
+    const last = data?.[data.length-1];
+    const value = parseFloat(String(last?.valor || '').replace(',','.'));
+    if(!Number.isFinite(value)) throw new Error('Taxa inválida');
+
+    state.rate = {
+      cdi:value,
+      source:'Banco Central do Brasil — SGS 4389',
+      refDate:last?.data || null
+    };
+
+    $('rateInfo').textContent =
+      `Taxa de referência atualizada: CDI ${pct(value)} a.a. Fonte: Banco Central do Brasil.`;
+  }catch(err){
+    state.rate = {
+      cdi:CFG.fallbackCDI,
+      source:'Taxa de contingência configurada no simulador',
+      refDate:null
+    };
+    $('rateInfo').textContent =
+      `Não foi possível atualizar o CDI agora. O simulador usará temporariamente ${pct(CFG.fallbackCDI)} a.a. como taxa de contingência configurada.`;
+  }
+}
+loadCDI();
+
+const QUESTIONS = [
+  {
+    id:'goal',
+    title:'1. O que mais pesa para você ao investir?',
+    opts:[
+      ['Preservar o patrimônio, mesmo abrindo mão de parte do potencial de retorno.',0],
+      ['Equilibrar estabilidade e crescimento ao longo do tempo.',1],
+      ['Buscar crescimento maior, aceitando oscilações relevantes no caminho.',2]
+    ]
+  },
+  {
+    id:'drop',
+    title:'2. Se parte dos seus investimentos caísse cerca de 10% em um período curto, qual seria sua reação mais provável?',
+    opts:[
+      ['Eu ficaria desconfortável e provavelmente reduziria a exposição ao risco.',0],
+      ['Eu revisaria o cenário antes de decidir e poderia manter a posição.',1],
+      ['Eu aceitaria a oscilação se a estratégia de longo prazo continuasse fazendo sentido.',2]
+    ]
+  },
+  {
+    id:'horizon',
+    title:'3. Quando você imagina precisar de uma parcela relevante desse dinheiro?',
+    opts:[
+      ['Em até 2 anos.',0],
+      ['Entre 2 e 5 anos.',1],
+      ['Em mais de 5 anos.',2]
+    ]
+  },
+  {
+    id:'knowledge',
+    title:'4. Como você descreve sua experiência com investimentos?',
+    opts:[
+      ['Estou começando ou prefiro produtos que entendo com facilidade.',0],
+      ['Já invisto em diferentes classes e acompanho minha carteira.',1],
+      ['Tenho experiência com oscilações, renda variável e estratégias mais complexas.',2]
+    ]
+  },
+  {
+    id:'liquidity',
+    title:'5. Qual afirmação mais combina com sua necessidade de liquidez?',
+    opts:[
+      ['Quero a maior parte do patrimônio disponível para resgate com facilidade.',0],
+      ['Posso dividir entre liquidez e objetivos de médio/longo prazo.',1],
+      ['Posso manter parte relevante do patrimônio investida por períodos mais longos.',2]
+    ]
+  }
+];
+
+$('questions').innerHTML = QUESTIONS.map(q => `
+  <div class="question" data-q="${q.id}">
+    <div class="q-title">${q.title}</div>
+    <div class="options">
+      ${q.opts.map(([label,score],i)=>`
+        <button type="button" class="option" data-q="${q.id}" data-score="${score}" data-index="${i}">
+          ${label}
+        </button>
+      `).join('')}
+    </div>
+  </div>
+`).join('');
+
+document.querySelectorAll('.option').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const q = btn.dataset.q;
+    state.answers[q] = Number(btn.dataset.score);
+
+    document.querySelectorAll(`.option[data-q="${q}"]`).forEach(x=>x.classList.remove('on'));
+    btn.classList.add('on');
+
+    $('next2').disabled = Object.keys(state.answers).length !== QUESTIONS.length;
+  });
+});
+
+function getProfile(){
+  const score = Object.values(state.answers).reduce((a,b)=>a+b,0);
+
+  if(score <= 3){
+    return {
+      key:'conservador',
+      label:'Conservador',
+      score,
+      desc:'Suas respostas indicam maior prioridade para preservação, previsibilidade e liquidez, com menor conforto diante de oscilações.',
+      principles:[
+        'Liquidez e reserva para imprevistos tendem a ter peso importante na organização financeira.',
+        'Prazo e risco precisam estar muito claros antes de assumir oscilações adicionais.',
+        'Diversificação continua relevante, mas sempre respeitando sua tolerância a perdas.'
+      ]
+    };
+  }
+
+  if(score <= 7){
+    return {
+      key:'moderado',
+      label:'Moderado',
+      score,
+      desc:'Suas respostas sugerem busca por equilíbrio entre estabilidade e crescimento, com alguma tolerância a oscilações quando existe horizonte adequado.',
+      principles:[
+        'Objetivos de curto, médio e longo prazo podem exigir estruturas diferentes.',
+        'Diversificação pode ajudar a equilibrar liquidez, risco e potencial de crescimento.',
+        'Oscilações fazem parte de algumas classes e precisam estar compatíveis com seu prazo.'
+      ]
+    };
+  }
+
+  return {
+    key:'arrojado',
+    label:'Arrojado',
+    score,
+    desc:'Suas respostas indicam maior tolerância a oscilações e horizonte mais longo, com disposição para aceitar risco em busca de crescimento.',
+    principles:[
+      'Maior tolerância a risco não elimina a necessidade de reserva, liquidez e diversificação.',
+      'Oscilações relevantes podem ocorrer e precisam caber no seu horizonte e capacidade financeira.',
+      'A alocação adequada depende do conjunto do patrimônio, objetivos e experiência do investidor.'
+    ]
+  };
+}
+
+function go(step){
+  ['s1','s2','s3'].forEach((id,i)=>$(id).classList.toggle('hidden',i+1 !== step));
+  $('result').classList.add('hidden');
+  $('stepper').classList.remove('hidden');
+  $('intro').classList.remove('hidden');
+
+  const dots = [...document.querySelectorAll('.dot')];
+  const conns = [...document.querySelectorAll('.connector')];
+  dots.forEach((d,i)=>d.classList.toggle('on',i < step));
+  conns.forEach((c,i)=>c.classList.toggle('on',i < step-1));
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+$('next1').addEventListener('click',()=>go(2));
+$('next2').addEventListener('click',()=>go(3));
+document.querySelectorAll('[data-back]').forEach(btn=>{
+  btn.addEventListener('click',()=>go(Number(btn.dataset.back)));
+});
+
+function captureUtm(){
+  const p = new URLSearchParams(location.search);
+  const fields = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','gclid','fbclid'];
+  state.utm = {};
+  fields.forEach(k=>{
+    const v = p.get(k);
+    if(v) state.utm[k] = v;
+  });
+}
+captureUtm();
+
+$('privacyLink').href = CFG.privacyUrl;
+
+function validateLead(){
+  const name = $('name').value.trim();
+  const email = $('email').value.trim();
+  const phoneDigits = $('phone').value.replace(/\D/g,'');
+  const objective = $('objective').value;
+  const privacy = $('privacy').checked;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  if(!name || phoneDigits.length < 10 || !emailOk || !objective || !privacy){
+    $('formErr').textContent =
+      'Preencha nome, WhatsApp, e-mail, objetivo e confirme a ciência do Aviso de Privacidade.';
+    return false;
+  }
+
+  $('formErr').textContent = '';
+  return true;
+}
+
+function calculateProjection(){
+  const initial = state.initialCents/100;
+  const monthly = state.monthlyCents/100;
+  const months = state.years*12;
+  const annual = state.rate.cdi/100;
+
+  // Converte a taxa anual de referência em taxa mensal equivalente.
+  const rm = Math.pow(1+annual,1/12)-1;
+
+  const futureInitial = initial*Math.pow(1+rm,months);
+  const futureMonthly = rm === 0
+    ? monthly*months
+    : monthly*((Math.pow(1+rm,months)-1)/rm);
+
+  const future = futureInitial + futureMonthly;
+  const contributed = initial + monthly*months;
+
+  return {
+    initial,
+    monthly,
+    months,
+    future,
+    contributed,
+    grossGain:future-contributed
+  };
+}
+
+function buildLeadPayload(){
+  const profile = getProfile();
+  const calc = calculateProjection();
+
+  return {
+    source:'nover_simulador',
+    createdAt:new Date().toISOString(),
+
+    contact:{
+      name:$('name').value.trim(),
+      phone:$('phone').value.trim(),
+      email:$('email').value.trim()
+    },
+
+    qualification:{
+      objective:$('objective').value,
+      investedRange:$('investedRange').value || null,
+      marketingOptIn:$('marketing').checked
+    },
+
+    simulation:{
+      initial:calc.initial,
+      monthly:calc.monthly,
+      years:state.years,
+      cdiReference:state.rate.cdi,
+      cdiSource:state.rate.source,
+      projectedGrossValue:Number(calc.future.toFixed(2)),
+      totalContributed:Number(calc.contributed.toFixed(2))
+    },
+
+    indicativeProfile:{
+      key:profile.key,
+      label:profile.label,
+      score:profile.score,
+      answers:state.answers
+    },
+
+    attribution:state.utm,
+    page:location.href
+  };
+}
+
+async function sendLead(payload){
+  if(!CFG.leadWebhookUrl){
+    console.info('Nover simulador: leadWebhookUrl não configurado.',payload);
+    return {ok:false,reason:'webhook_not_configured'};
+  }
+
+  try{
+    const response = await fetch(CFG.leadWebhookUrl,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+
+    return {ok:response.ok,status:response.status};
+  }catch(error){
+    console.warn('Falha ao enviar lead:',error);
+    return {ok:false,reason:'network_error'};
+  }
+}
+
+function renderResult(){
+  const calc = calculateProjection();
+  const profile = getProfile();
+
+  $('futureValue').textContent = brl(calc.future);
+  $('totalContributed').textContent = brl(calc.contributed);
+
+  $('futureCopy').textContent =
+    `Estimativa bruta para ${state.years} ${state.years===1?'ano':'anos'}, considerando ${brl(calc.initial)} de aporte inicial` +
+    (calc.monthly > 0 ? ` e ${brl(calc.monthly)} por mês` : '') +
+    `, usando o CDI atual de ${pct(state.rate.cdi)} a.a. como taxa constante de referência.`;
+
+  $('barContribLabel').textContent = brl(calc.contributed);
+  $('barFutureLabel').textContent = brl(calc.future);
+
+  const max = Math.max(calc.future,calc.contributed,1);
+  $('barContrib').style.width = `${Math.max(6,calc.contributed/max*100)}%`;
+  $('barFuture').style.width = `${Math.max(6,calc.future/max*100)}%`;
+
+  $('resultRateInfo').textContent =
+    `Referência: CDI ${pct(state.rate.cdi)} a.a. · ${state.rate.source}` +
+    (state.rate.refDate ? ` · dado de ${state.rate.refDate}` : '') +
+    `. O cálculo mantém essa taxa constante apenas para fins ilustrativos.`;
+
+  $('profileName').textContent = profile.label;
+  $('profileDesc').textContent = profile.desc;
+  $('principles').innerHTML = profile.principles.map(x=>`<li>${x}</li>`).join('');
+
+  const msg = encodeURIComponent(
+    `Olá, vim pelo Simulador da Nover. Meu perfil indicativo foi ${profile.label} e gostaria de conversar com um assessor sobre meus objetivos.`
+  );
+
+  if(/^\d{12,15}$/.test(CFG.whatsappNumber)){
+    $('whatsappCta').href = `https://wa.me/${CFG.whatsappNumber}?text=${msg}`;
+  }else{
+    $('whatsappCta').href = '#';
+    $('whatsappCta').addEventListener('click',e=>{
+      e.preventDefault();
+      alert('Configure o número oficial da Nover em CFG.whatsappNumber antes de publicar.');
+    },{once:true});
+  }
+
+  $('s3').classList.add('hidden');
+  $('stepper').classList.add('hidden');
+  $('intro').classList.add('hidden');
+  $('result').classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+$('leadForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  if(!validateLead()) return;
+
+  const submitBtn = e.submitter;
+  const oldText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Gerando resultado...';
+
+  const payload = buildLeadPayload();
+  await sendLead(payload);
+
+  renderResult();
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = oldText;
+});
+
+$('restart').addEventListener('click',()=>location.reload());
+
+validateStep1();
+</script>
+</body>
+</html>
