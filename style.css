@@ -238,20 +238,15 @@ input[type="range"]{
 }
 
 .question{
-  border-top:1px solid var(--line);
-  padding:22px 0;
+  display:none;
   opacity:0;
-  transform:translateY(10px);
-  transition:opacity .4s ease, transform .4s ease;
+  transform:translateY(6px);
+  transition:opacity .2s ease, transform .2s ease;
 }
-.question.visible{
+.question.active{display:block}
+.question.show{
   opacity:1;
   transform:translateY(0);
-}
-.question.hidden{display:none}
-.question:first-of-type{
-  border-top:0;
-  padding-top:0;
 }
 .q-title{
   font-weight:500;

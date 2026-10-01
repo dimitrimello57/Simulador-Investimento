@@ -33,6 +33,7 @@ const state = {
   monthlyCents: 0,
   years: CFG.defaultYears,
   answers: {},
+  qIndex: 0,
   rate: {
     cdi: CFG.fallbackCDI,
     source: 'Taxa de contingência',
@@ -176,7 +177,7 @@ const QUESTIONS = [
 ];
 
 $('questions').innerHTML = QUESTIONS.map((q,qi) => `
-  <div class="question${qi===0 ? ' visible' : ' hidden'}" data-q="${q.id}">
+  <div class="question${qi===0 ? ' active show' : ''}" data-q="${q.id}">
     <div class="q-title">${q.title}</div>
     <div class="options">
       ${q.opts.map(([label,score],i)=>`
@@ -188,19 +189,38 @@ $('questions').innerHTML = QUESTIONS.map((q,qi) => `
   </div>
 `).join('');
 
-function revealNextQuestion(currentId){
-  const qIndex = QUESTIONS.findIndex(q=>q.id === currentId);
-  const next = QUESTIONS[qIndex+1];
-  if(!next) return;
+let questionTransitioning = false;
 
-  const nextEl = document.querySelector(`.question[data-q="${next.id}"]`);
-  if(!nextEl || nextEl.classList.contains('visible')) return;
+function goToQuestion(index){
+  if(questionTransitioning) return;
 
-  nextEl.classList.remove('hidden');
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=> nextEl.classList.add('visible'));
-  });
-  nextEl.scrollIntoView({behavior:'smooth',block:'center'});
+  const activeEl = document.querySelector('.question.active');
+  const nextEl = document.querySelector(`.question[data-q="${QUESTIONS[index].id}"]`);
+  if(!nextEl || activeEl === nextEl) return;
+
+  questionTransitioning = true;
+  state.qIndex = index;
+
+  const showNext = () => {
+    nextEl.classList.add('active');
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        nextEl.classList.add('show');
+        $('next2').disabled = !(QUESTIONS[index].id in state.answers);
+        questionTransitioning = false;
+      });
+    });
+  };
+
+  if(activeEl){
+    activeEl.classList.remove('show');
+    setTimeout(()=>{
+      activeEl.classList.remove('active');
+      showNext();
+    },200);
+  }else{
+    showNext();
+  }
 }
 
 document.querySelectorAll('.option').forEach(btn=>{
@@ -211,10 +231,16 @@ document.querySelectorAll('.option').forEach(btn=>{
     document.querySelectorAll(`.option[data-q="${q}"]`).forEach(x=>x.classList.remove('on'));
     btn.classList.add('on');
 
-    $('next2').disabled = Object.keys(state.answers).length !== QUESTIONS.length;
-
-    revealNextQuestion(q);
+    $('next2').disabled = false;
   });
+});
+
+$('backQ').addEventListener('click',()=>{
+  if(state.qIndex > 0){
+    goToQuestion(state.qIndex - 1);
+  }else{
+    go(1);
+  }
 });
 
 function getProfile(){
@@ -276,7 +302,13 @@ function go(step){
 }
 
 $('next1').addEventListener('click',()=>go(2));
-$('next2').addEventListener('click',()=>go(3));
+$('next2').addEventListener('click',()=>{
+  if(state.qIndex < QUESTIONS.length - 1){
+    goToQuestion(state.qIndex + 1);
+  }else{
+    go(3);
+  }
+});
 document.querySelectorAll('[data-back]').forEach(btn=>{
   btn.addEventListener('click',()=>go(Number(btn.dataset.back)));
 });
