@@ -115,7 +115,7 @@ async function loadCDI(){
     };
 
     $('rateInfo').textContent =
-      `Taxa de referência atualizada: CDI ${pct(value)} a.a. Fonte: Banco Central do Brasil.`;
+      `Taxa de referência atualizada: CDI ${pct(value)} a.a. (taxa corrente, base 252 dias úteis) · Fonte: Banco Central do Brasil. Este valor pode diferir do "CDI acumulado 12 meses" exibido em outros sites, que é uma média histórica, não a taxa do dia.`;
   }catch(err){
     state.rate = {
       cdi:CFG.fallbackCDI,
@@ -515,9 +515,9 @@ function renderResult(){
   $('barFuture').style.width = `${Math.max(6,calc.future/max*100)}%`;
 
   $('resultRateInfo').textContent =
-    `Referência: CDI ${pct(state.rate.cdi)} a.a. · ${state.rate.source}` +
+    `Referência: CDI ${pct(state.rate.cdi)} a.a. (taxa corrente) · ${state.rate.source}` +
     (state.rate.refDate ? ` · dado de ${state.rate.refDate}` : '') +
-    `. O cálculo mantém essa taxa constante apenas para fins ilustrativos.`;
+    `. O cálculo mantém essa taxa constante apenas para fins ilustrativos. Não confunda com o "CDI acumulado 12 meses" de outros sites, que é uma média histórica diferente da taxa do dia.`;
 
   $('evolutionChart').innerHTML = renderChart(series);
   $('evolutionChart').setAttribute('aria-label',
