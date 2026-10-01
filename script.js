@@ -175,8 +175,8 @@ const QUESTIONS = [
   }
 ];
 
-$('questions').innerHTML = QUESTIONS.map(q => `
-  <div class="question" data-q="${q.id}">
+$('questions').innerHTML = QUESTIONS.map((q,qi) => `
+  <div class="question${qi===0 ? ' visible' : ' hidden'}" data-q="${q.id}">
     <div class="q-title">${q.title}</div>
     <div class="options">
       ${q.opts.map(([label,score],i)=>`
@@ -188,6 +188,21 @@ $('questions').innerHTML = QUESTIONS.map(q => `
   </div>
 `).join('');
 
+function revealNextQuestion(currentId){
+  const qIndex = QUESTIONS.findIndex(q=>q.id === currentId);
+  const next = QUESTIONS[qIndex+1];
+  if(!next) return;
+
+  const nextEl = document.querySelector(`.question[data-q="${next.id}"]`);
+  if(!nextEl || nextEl.classList.contains('visible')) return;
+
+  nextEl.classList.remove('hidden');
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=> nextEl.classList.add('visible'));
+  });
+  nextEl.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
 document.querySelectorAll('.option').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const q = btn.dataset.q;
@@ -197,6 +212,8 @@ document.querySelectorAll('.option').forEach(btn=>{
     btn.classList.add('on');
 
     $('next2').disabled = Object.keys(state.answers).length !== QUESTIONS.length;
+
+    revealNextQuestion(q);
   });
 });
 
