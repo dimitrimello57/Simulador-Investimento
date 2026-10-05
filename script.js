@@ -19,7 +19,7 @@ const CFG = {
   bcbSeries: 4389, // CDI anualizado, base 252
   bcbUrl: s => `https://api.bcb.gov.br/dados/serie/bcdata.sgs.${s}/dados/ultimos/2?formato=json`,
 
-  whatsappNumber: '5582993827390',
+  whatsappNumber: '5582993326965',
 
   /* Cole aqui o endpoint do CRM/n8n/HubSpot/Pipedrive etc. Ex.: https://seu-dominio.com/webhook/nover-simulador */
   leadWebhookUrl: '',
